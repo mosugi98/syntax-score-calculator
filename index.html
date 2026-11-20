@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNTAX Score Calculator</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#14202b;--mute:#5d6b78;--line:#d5dce3;--acc:#c62828;--accink:#fff;--ok:#2e7d32;--mid:#e08a00;--hi:#c62828;--vessel:#9aa7b3}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1419;--card:#18212a;--ink:#e8eef3;--mute:#93a3b1;--line:#2b3946;--acc:#ef5350;--accink:#10151a;--ok:#66bb6a;--mid:#ffb74d;--hi:#ef5350;--vessel:#5c6b78}}
+:root[data-theme=dark]{--bg:#0e1419;--card:#18212a;--ink:#e8eef3;--mute:#93a3b1;--line:#2b3946;--acc:#ef5350;--accink:#10151a;--ok:#66bb6a;--mid:#ffb74d;--hi:#ef5350;--vessel:#5c6b78}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{font-size:18px;margin:0}
+header .tools{display:flex;gap:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);min-height:44px}
+.btn.primary{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.btn.danger{color:var(--hi)}
+main{padding:12px;max-width:1400px;margin:auto}
+.grid{display:grid;grid-template-columns:200px minmax(0,1fr) 300px;gap:12px;align-items:start}
+@media (max-width:1000px){.grid{grid-template-columns:1fr}.score{position:static!important}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h2{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.lesions{display:flex;flex-direction:column;gap:8px}
+.les{display:flex;justify-content:space-between;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);text-align:left;min-height:44px}
+.les.on{border-color:var(--acc);box-shadow:inset 3px 0 0 var(--acc)}
+.les b{font-variant-numeric:tabular-nums}
+.dom{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;padding:40px 0}
+.dom button{width:260px;padding:30px 16px;font-size:20px;border-radius:16px;border:2px solid var(--line);background:var(--card)}
+.dom button:hover{border-color:var(--acc)}
+.tree{width:100%;max-width:560px;display:block;margin:0 auto}
+.sg{cursor:pointer}
+.sg .vis{stroke:var(--vessel);stroke-width:10;stroke-linecap:round}
+.sg.sel .vis{stroke:var(--acc)}
+.sg circle{fill:var(--card);stroke:var(--vessel);stroke-width:2}
+.sg.sel circle{fill:var(--acc);stroke:var(--acc)}
+.sg text{font-size:10px;text-anchor:middle;dominant-baseline:central;fill:var(--ink);pointer-events:none;font-weight:600}
+.sg.sel text{fill:var(--accink)}
+.tl{font-size:12px;fill:var(--mute);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:13px;min-height:40px}
+.chip.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.q{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.q:first-of-type{border-top:0}
+.ql{flex:1 1 220px;font-weight:600}
+.ql small{display:block;font-weight:400;color:var(--mute)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);min-height:44px;min-width:56px}
+.pill.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.sub{margin-left:12px;padding-left:12px;border-left:3px solid var(--line)}
+.score{position:sticky;top:12px}
+.big{font-size:56px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.tier{display:inline-block;margin-top:6px;padding:4px 12px;border-radius:999px;font-weight:700;color:#fff}
+.tier.Low{background:var(--ok)}.tier.Intermediate{background:var(--mid)}.tier.High{background:var(--hi)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+td{padding:4px 0;border-top:1px solid var(--line)}td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--mute);margin-top:12px}
+.stepper{display:flex;align-items:center;gap:8px}.stepper b{min-width:24px;text-align:center}
+@media print{header .tools,.lesions-col,.tree-col,.noprint{display:none!important}.grid{display:block}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>SYNTAX Score Calculator</h1>
+  <div class="tools">
+    <button class="btn" data-act="theme">Theme</button>
+    <button class="btn" data-act="reset">New patient</button>
+  </div>
+</header>
+<main id="app"></main>
+
+<script id="core">
+// ---- Scoring core (pure; no DOM). Tested by test.js ----
+// [id, name, weight right-dominant, weight left-dominant]; null = segment not applicable for that dominance
+const SEGS=[
+['1','RCA proximal',1,0],['2','RCA mid',1,0],['3','RCA distal',1,0],
+['4','Posterior descending (RCA)',1,null],['16','Posterolateral (RCA)',0.5,null],
+['16a','Posterolateral 16a',0.5,null],['16b','Posterolateral 16b',0.5,null],['16c','Posterolateral 16c',0.5,null],
+['5','Left main',5,6],['6','LAD proximal',3.5,3.5],['7','LAD mid',2.5,2.5],['8','LAD apical',1,1],
+['9','First diagonal',1,1],['9a','Add. first diagonal',1,1],['10','Second diagonal',0.5,0.5],['10a','Add. second diagonal',0.5,0.5],
+['11','Proximal circumflex',1.5,2.5],['12','Intermediate / anterolateral',1,1],['12a','Obtuse marginal 12a',1,1],['12b','Obtuse marginal 12b',1,1],
+['13','Distal circumflex',0.5,1.5],['14','Left posterolateral',0.5,1],['14a','Left posterolateral 14a',0.5,1],['14b','Left posterolateral 14b',0.5,1],
+['15','Posterior descending (left)',null,1]
+];
+const OSTIAL_SEGS=['1','5','6','11'];
+const MEDINA={A:[1,0,0,1],B:[0,1,0,1],C:[1,1,0,1],D:[1,1,1,2],E:[0,0,1,2],F:[1,0,1,2],G:[0,1,1,2]};
+function weight(id,dom){const s=SEGS.find(x=>x[0]===id);if(!s)return null;return dom==='left'?s[3]:s[2];}
+function visibleSegs(dom){return SEGS.filter(s=>weight(s[0],dom)!==null).map(s=>s[0]);}
+function segName(id){const s=SEGS.find(x=>x[0]===id);return s?s[1]:id;}
+function newLesion(){return {segs:[],to:false,toFirst:null,toAge:'no',blunt:false,bridge:false,nonVisible:0,side:0,tri:0,bif:'',angle:false,ostial:false,tort:false,len:false,calc:false,thromb:false};}
+function lesionScore(L,dom){
+  const parts=[];const segs=L.segs.filter(id=>weight(id,dom)!==null);
+  if(!segs.length)return {total:0,parts};
+  let sw=0;
+  if(L.to){
+    const first=segs.includes(L.toFirst)?L.toFirst:segs[0];
+    segs.forEach(id=>{sw+=weight(id,dom)*(id===first?5:2);});
+    parts.push(['Segments (total occlusion: first ×5, others ×2)',sw]);
+    if(L.toAge==='yes'||L.toAge==='unk')parts.push(['Occlusion age >3 months / unknown',1]);
+    if(L.blunt)parts.push(['Blunt stump',1]);
+    if(L.bridge)parts.push(['Bridging collaterals',1]);
+    if(L.nonVisible>0)parts.push(['Segments not visualised beyond occlusion',L.nonVisible]);
+    if(L.side>0)parts.push(['Side branch at origin of occlusion',1]);
+  }else{
+    segs.forEach(id=>{sw+=weight(id,dom)*2;});
+    parts.push(['Segments (stenosis ≥50%: weight ×2)',sw]);
+  }
+  if(L.tri>0)parts.push([`Trifurcation (${L.tri} diseased segment${L.tri>1?'s':''})`,L.tri+2]);
+  else if(L.bif&&MEDINA[L.bif]){
+    parts.push([`Bifurcation (Medina ${MEDINA[L.bif].slice(0,3).join(',')})`,MEDINA[L.bif][3]]);
+    if(L.angle)parts.push(['Bifurcation angle <70°',1]);
+  }
+  if(L.ostial&&segs.some(id=>OSTIAL_SEGS.includes(id)))parts.push(['Aorto-ostial lesion',1]);
+  if(L.tort)parts.push(['Severe tortuosity',2]);
+  if(L.len&&!L.to)parts.push(['Length >20 mm',1]);
+  if(L.calc)parts.push(['Heavy calcification',2]);
+  if(L.thromb)parts.push(['Thrombus',1]);
+  return {total:parts.reduce((a,p)=>a+p[1],0),parts};
+}
+function totalScore(lesions,diffuse,dom){
+  const per=lesions.map(l=>lesionScore(l,dom).total);
+  const d=diffuse.filter(id=>weight(id,dom)!==null).length;
+  return {per,diffuse:d,total:per.reduce((a,b)=>a+b,0)+d};
+}
+function tier(s){return s<=22?'Low':s<=32?'Intermediate':'High';}
+</script>
+
+<script id="ui">
+// ---- UI ----
+const GEO={ // id:[x1,y1,x2,y2] on a 560x440 schematic canvas
+'1':[70,60,62,130],'2':[62,130,55,220],'3':[55,220,85,300],'4':[85,300,135,395],
+'16':[85,300,40,360],'16a':[40,360,20,402],'16b':[40,360,46,412],'16c':[40,360,70,405],
+'5':[300,40,300,95],'6':[300,95,345,150],'7':[345,150,375,240],'8':[375,240,385,340],
+'9':[352,160,440,185],'9a':[440,185,500,205],'10':[378,250,450,285],'10a':[450,285,505,310],
+'11':[300,95,250,140],'12':[300,95,290,190],'12a':[250,140,185,165],'12b':[242,190,180,225],
+'13':[250,140,235,240],'14':[235,240,220,310],'14a':[220,310,195,355],'14b':[220,310,245,360],'15':[235,240,285,335]
+};
+const S={dom:null,lesions:[newLesion()],cur:0,diffuse:[],theme:null};
+const L=()=>S.lesions[S.cur];
+const $app=document.getElementById('app');
+const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+
+function pill(k,v,t,on){return `<button class="pill${on?' on':''}" data-act="set" data-k="${k}" data-v="${v}">${t}</button>`;}
+function yn(k,label,hint){const v=L()[k];return `<div class="q"><div class="ql">${label}${hint?`<small>${hint}</small>`:''}</div><div class="pills">${pill(k,false,'No',!v)}${pill(k,true,'Yes',v)}</div></div>`;}
+
+function treeSVG(){
+  const l=L();let g='';
+  SEGS.forEach(([id])=>{
+    if(weight(id,S.dom)===null)return;
+    const [x1,y1,x2,y2]=GEO[id];const sel=l.segs.includes(id);
+    g+=`<g class="sg${sel?' sel':''}" data-act="seg" data-id="${id}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="transparent" stroke-width="30" stroke-linecap="round"/><line class="vis" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><circle cx="${(x1+x2)/2}" cy="${(y1+y2)/2}" r="${id.length>2?13:11}"/><text x="${(x1+x2)/2}" y="${(y1+y2)/2}">${id}</text></g>`;
+  });
+  return `<svg class="tree" viewBox="0 0 560 440" role="img" aria-label="Coronary tree: tap segments to select"><text class="tl" x="20" y="40">RCA</text><text class="tl" x="320" y="40">LM</text><text class="tl" x="400" y="130">LAD / diagonals</text><text class="tl" x="120" y="110">LCx</text>${g}</svg>`;
+}
+function chips(list,sel,act){return `<div class="chips">${list.map(id=>`<button class="chip${sel.includes(id)?' on':''}" data-act="${act}" data-id="${id}">${id} · ${segName(id)}</button>`).join('')}</div>`;}
+
+function questions(){
+  const l=L();let h='';
+  h+=yn('to','Total occlusion','100% occluded, no antegrade flow');
+  if(l.to){
+    h+=`<div class="sub"><div class="q"><div class="ql">First segment of the occlusion</div><div class="pills">${l.segs.length?l.segs.map(id=>pill('toFirst',id,id,(l.toFirst||l.segs[0])===id)).join(''):'<small>Select segments first</small>'}</div></div>
+    <div class="q"><div class="ql">Age of occlusion &gt;3 months?</div><div class="pills">${pill('toAge','no','No',l.toAge==='no')}${pill('toAge','yes','Yes',l.toAge==='yes')}${pill('toAge','unk','Unknown',l.toAge==='unk')}</div></div>
+    ${yn('blunt','Blunt stump')}${yn('bridge','Bridging collaterals')}
+    <div class="q"><div class="ql">Segments not visualised beyond the occlusion<small>Count of segments not filled by antegrade or retrograde contrast</small></div><div class="stepper"><button class="pill" data-act="nv" data-d="-1">−</button><b>${l.nonVisible}</b><button class="pill" data-act="nv" data-d="1">+</button></div></div>
+    <div class="q"><div class="ql">Side branch at the origin of the occlusion</div><div class="pills">${[['No',0],['&lt;1.5 mm',1],['≥1.5 mm',2],['Both',3]].map(([t,v])=>pill('side',v,t,l.side===v)).join('')}</div></div></div>`;
+  }
+  h+=`<div class="q"><div class="ql">Trifurcation<small>Number of diseased segments involved</small></div><div class="pills">${pill('tri',0,'No',l.tri===0)}${[1,2,3,4].map(n=>pill('tri',n,n,l.tri===n)).join('')}</div></div>`;
+  if(l.tri===0){
+    h+=`<div class="q"><div class="ql">Bifurcation<small>Medina class (main proximal, main distal, side branch)</small></div><div class="pills">${pill('bif','','No',!l.bif)}${Object.keys(MEDINA).map(k=>pill('bif',k,`${k} ${MEDINA[k].slice(0,3).join(',')}`,l.bif===k)).join('')}</div></div>`;
+    if(l.bif)h+=`<div class="sub">${yn('angle','Angle between distal main vessel and side branch <70°')}</div>`;
+  }
+  if(l.segs.some(id=>OSTIAL_SEGS.includes(id)))h+=yn('ostial','Aorto-ostial lesion','Segments 1, 5, 6 or 11');
+  h+=yn('tort','Severe tortuosity','Proximal to the diseased segment');
+  if(!l.to)h+=yn('len','Length >20 mm');
+  h+=yn('calc','Heavy calcification');
+  h+=yn('thromb','Thrombus');
+  return h;
+}
+
+function scorePanel(){
+  const t=totalScore(S.lesions,S.diffuse,S.dom),cl=lesionScore(L(),S.dom);
+  const tr=tier(t.total);
+  let h=`<div class="card score"><h2>SYNTAX Score</h2><div class="big">${fmt(t.total)}</div><span class="tier ${tr}">${tr} (${tr==='Low'?'≤22':tr==='Intermediate'?'23–32':'≥33'})</span>
+  <table>${S.lesions.map((_,i)=>`<tr><td>Lesion ${i+1}</td><td>${fmt(t.per[i])}</td></tr>`).join('')}${t.diffuse?`<tr><td>Diffuse disease</td><td>${t.diffuse}</td></tr>`:''}</table>
+  <h2 style="margin-top:16px">Lesion ${S.cur+1} breakdown</h2><table>${cl.parts.length?cl.parts.map(p=>`<tr><td>${p[0]}</td><td>${fmt(p[1])}</td></tr>`).join(''):'<tr><td>Select segments</td><td></td></tr>'}</table>
+  <div class="noprint" style="display:flex;gap:8px;margin-top:14px"><button class="btn" data-act="print">Print</button><button class="btn" data-act="copy">Copy summary</button></div>
+  <p class="note">Educational tool. Not an official or validated implementation of the SYNTAX Score and not a substitute for clinical judgment. Check results against syntaxscore.org. Nothing is stored or transmitted.</p></div>`;
+  return h;
+}
+
+function render(){
+  if(!S.dom){
+    $app.innerHTML=`<div class="card"><h2>Step 1 · Coronary dominance</h2><p style="text-align:center">Dominance is right if the posterior descending artery arises from the RCA, and left if it arises from the circumflex.</p><div class="dom"><button data-act="dom" data-v="right">Right dominance</button><button data-act="dom" data-v="left">Left dominance</button></div></div>`;return;
+  }
+  const vis=visibleSegs(S.dom);
+  $app.innerHTML=`<div class="grid">
+  <div class="card lesions-col"><h2>Lesions</h2><div class="lesions">${S.lesions.map((_,i)=>`<button class="les${i===S.cur?' on':''}" data-act="selL" data-i="${i}"><span>Lesion ${i+1}</span><b>${fmt(totalScore(S.lesions,[],S.dom).per[i])}</b></button>`).join('')}
+  ${S.lesions.length<12?'<button class="btn primary" data-act="addL">+ Add lesion</button>':''}
+  ${S.lesions.length>1?'<button class="btn danger" data-act="delL">Delete this lesion</button>':''}
+  <button class="btn" data-act="changeDom">${S.dom==='right'?'Right':'Left'} dominant · change</button></div></div>
+  <div>
+    <div class="card tree-col"><h2>Lesion ${S.cur+1} · tap diseased segments</h2>${treeSVG()}${chips(vis,L().segs,'seg')}</div>
+    <div class="card" style="margin-top:12px"><h2>Lesion ${S.cur+1} · characteristics</h2>${questions()}</div>
+    <div class="card" style="margin-top:12px"><h2>Diffuse disease / small vessels (whole tree)</h2><p class="note" style="margin-top:0">Tap each segment where more than 75% of its length has a vessel diameter ≤2 mm. Adds 1 point per segment.</p>${chips(vis,S.diffuse,'diff')}</div>
+  </div>
+  ${scorePanel()}</div>`;
+}
+
+function parse(v){return v==='true'?true:v==='false'?false:/^-?\d+$/.test(v)?Number(v):v;}
+function toggle(arr,id){const i=arr.indexOf(id);i<0?arr.push(id):arr.splice(i,1);}
+function summary(){
+  const t=totalScore(S.lesions,S.diffuse,S.dom);
+  let s=`SYNTAX Score: ${fmt(t.total)} (${tier(t.total)}) · ${S.dom}-dominant\n`;
+  S.lesions.forEach((l,i)=>{const r=lesionScore(l,S.dom);s+=`Lesion ${i+1} [${l.segs.join(', ')||'-'}]: ${fmt(r.total)}\n`;});
+  if(t.diffuse)s+=`Diffuse disease: ${t.diffuse} (${S.diffuse.join(', ')})\n`;
+  return s+'Educational tool; not a validated or official calculation.';
+}
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const d=el.dataset;
+  switch(d.act){
+    case 'dom':S.dom=d.v;S.lesions.forEach(l=>{l.segs=l.segs.filter(id=>weight(id,S.dom)!==null);});S.diffuse=S.diffuse.filter(id=>weight(id,S.dom)!==null);break;
+    case 'changeDom':if(confirm('Change dominance? Segments not valid for the other dominance will be removed.'))S.dom=null;break;
+    case 'seg':toggle(L().segs,d.id);break;
+    case 'diff':toggle(S.diffuse,d.id);break;
+    case 'set':L()[d.k]=parse(d.v);if(d.k==='to'&&!L().to)Object.assign(L(),{toFirst:null,toAge:'no',blunt:false,bridge:false,nonVisible:0,side:0});if(d.k==='tri'&&L().tri>0){L().bif='';L().angle=false;}if(d.k==='bif'&&!L().bif)L().angle=false;break;
+    case 'nv':L().nonVisible=Math.max(0,L().nonVisible+Number(d.d));break;
+    case 'addL':S.lesions.push(newLesion());S.cur=S.lesions.length-1;break;
+    case 'selL':S.cur=Number(d.i);break;
+    case 'delL':if(confirm('Delete lesion '+(S.cur+1)+'?')){S.lesions.splice(S.cur,1);S.cur=Math.max(0,S.cur-1);}break;
+    case 'reset':if(confirm('Clear everything and start a new patient?')){S.dom=null;S.lesions=[newLesion()];S.cur=0;S.diffuse=[];}break;
+    case 'theme':{const dark=document.documentElement.getAttribute('data-theme')==='dark'||(!document.documentElement.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',dark?'light':'dark');break;}
+    case 'print':window.print();return;
+    case 'copy':try{navigator.clipboard.writeText(summary());el.textContent='Copied';setTimeout(render,1200);}catch(_){prompt('Copy summary:',summary());}return;
+  }
+  render();
+});
+render();
+</script>
+</body>
+</html>
